@@ -1,0 +1,67 @@
+# Table of Contents
+# Learn more at https://jupyterbook.org/customize/toc.html
+#
+# All paths are relative to the repository root.
+# 
+
+format: jb-book
+root: index
+
+parts:
+  # ────────────────────────────────────────────────────────────────────────────
+  - caption: "Electricity and Magnetism"
+    chapters:
+      - file: elctricity-magnetism/ch1
+      - file: elctricity-magnetism/ch2
+      - file: elctricity-magnetism/ch3
+      - file: elctricity-magnetism/ch4
+      - file: elctricity-magnetism/ch5
+      - file: elctricity-magnetism/ch6
+      - file: elctricity-magnetism/ch7
+      - file: elctricity-magnetism/ch8
+      - file: elctricity-magnetism/ch9
+      - file: elctricity-magnetism/ch10
+      - file: elctricity-magnetism/ch11
+      - file: elctricity-magnetism/ch12
+      - file: elctricity-magnetism/ch13
+      - file: elctricity-magnetism/ch14
+      - file: elctricity-magnetism/ch15
+      - file: elctricity-magnetism/ch16
+      - file: elctricity-magnetism/ch17
+      - file: elctricity-magnetism/ch18
+      - file: elctricity-magnetism/ch19
+      - file: elctricity-magnetism/ch20
+
+  # ────────────────────────────────────────────────────────────────────────────
+  - caption: "Electricity and Matter"
+    chapters:
+      - file: Electricity-matter/ch1
+      - file: Electricity-matter/ch2
+      - file: Electricity-matter/ch3
+      - file: Electricity-matter/ch4
+      - file: Electricity-matter/ch5
+      - file: Electricity-matter/ch6
+
+  # ────────────────────────────────────────────────────────────────────────────
+  - caption: "Recollections and Reflections"
+    chapters:
+      - file: Recollections-And-Reflections/ch1
+      - file: Recollections-And-Reflections/ch2
+      - file: Recollections-And-Reflections/ch3
+      - file: Recollections-And-Reflections/ch4
+      - file: Recollections-And-Reflections/ch5
+      - file: Recollections-And-Reflections/ch6
+      - file: Recollections-And-Reflections/ch7
+      - file: Recollections-And-Reflections/ch8
+      - file: Recollections-And-Reflections/ch9
+      - file: Recollections-And-Reflections/ch10
+      - file: Recollections-And-Reflections/ch11
+      - file: Recollections-And-Reflections/ch12
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # To add a new book in the future, append a new part block here, e.g.:
+  #
+  # - caption: "My New Book Title"
+  #   chapters:
+  #     - file: my-new-book/ch1
+  #     - file: my-new-book/ch2

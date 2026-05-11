@@ -1,0 +1,54 @@
+#######################################################################################
+# A default configuration that will be loaded for all jupyter books
+# See the documentation for help and inspiration:
+# https://jupyterbook.org/customize/config.html
+
+#######################################################################################
+# Book settings
+title: "J.J. Thomson's Works"
+author: J.J. Thomson
+copyright: "Public Domain"
+logo: ""
+
+#######################################################################################
+# Execution settings — notebooks are not used here
+execute:
+  execute_notebooks: "off"
+
+#######################################################################################
+# Parse and render settings
+parse:
+  myst_enable_extensions:
+    - amsmath        # LaTeX math blocks ($$...$$)
+    - dollarmath     # Inline math ($...$)
+    - colon_fence    # ::: admonitions
+    - deflist        # Definition lists
+    - html_admonition
+    - html_image
+    - smartquotes
+
+#######################################################################################
+# HTML-specific settings
+html:
+  home_page_in_navbar: true
+  use_issues_button: false
+  use_repository_button: false
+  use_edit_page_button: false
+  navbar_number_sections: false
+
+#######################################################################################
+# LaTeX-specific settings (for PDF export)
+latex:
+  latex_engine: pdflatex
+
+#######################################################################################
+# Sphinx / theme configuration
+sphinx:
+  config:
+    html_show_copyright: false
+    # Exclude per-book workspace dirs and the root workspace/ from the Sphinx scan.
+    # These contain raw OCR/prompt files that are not book chapters.
+    exclude_patterns:
+      - "*/workspace/**"
+      - "workspace/**"
+      - "_build/**"

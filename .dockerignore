@@ -1,0 +1,28 @@
+# .dockerignore — applied when building from the repo root
+# Keeps the Docker build context lean and prevents sensitive/generated files
+# from being sent to the Docker daemon.
+
+# ── Git metadata ──────────────────────────────────────────────────────────────
+.git/
+.gitignore
+
+# ── Book-specific workspace dirs (raw OCR/working files, not needed in image) ─
+elctricity-magnetism/workspace/
+Electricity-matter/workspace/
+Recollections-And-Reflections/workspace/
+
+# ── Jupyter Book build output (regenerated during the build) ──────────────────
+workspace/_build/
+workspace/.jupyter_cache/
+
+# ── Docker files themselves (not needed inside the container) ─────────────────
+workspace/Dockerfile
+docker-compose.yml
+.dockerignore
+
+# ── GitHub Actions ────────────────────────────────────────────────────────────
+.github/
+
+# ── OS artifacts ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

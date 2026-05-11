@@ -1,0 +1,62 @@
+# ════════════════════════════════════════════════════════════════════════════════
+#  JJ Thomson Books — Docker Compose
+#
+#  Run from the repository root (where this file lives):
+#    docker compose <command>
+#
+#  Services
+#  ────────
+#  build   Builds the Jupyter Book inside a container.
+#          Source is mounted from the host; output lands in workspace/_build/.
+#          Use this for rapid local iteration — no image rebuild needed.
+#
+#  serve   Serves workspace/_build/html/ via nginx at http://localhost:8080.
+#          Run `build` first, then `serve`.
+#
+#  Common workflows
+#  ────────────────
+#  1. First-time setup (builds the base image once):
+#       docker compose build build
+#
+#  2. Build the book:
+#       docker compose run --rm build
+#
+#  3. Preview in browser at http://localhost:8080:
+#       docker compose up serve
+#       (Ctrl-C to stop)
+#
+#  4. Rebuild after content changes (no image rebuild needed):
+#       docker compose run --rm build
+#       docker compose restart serve   # or re-run step 3
+#
+#  5. Force a clean rebuild of the book (clears Jupyter Book cache):
+#       docker compose run --rm build jupyter-book clean workspace/ && \
+#       docker compose run --rm build
+# ════════════════════════════════════════════════════════════════════════════════
+
+services:
+
+  # ── build ────────────────────────────────────────────────────────────────────
+  # Runs `jupyter-book build /books` with the entire repo mounted.
+  # Output appears in ./_build/html/ on the host.
+  build:
+    build:
+      context: .                        # Build context = repo root
+      dockerfile: workspace/Dockerfile
+      target: base                      # Only the build-env stage; no COPY of source
+    image: jj-thomson-jb-base:latest
+    working_dir: /books
+    volumes:
+      - .:/books                        # Mount entire repo so changes are picked up immediately
+    command: ["jupyter-book", "build", "/books"]
+
+  # ── serve ─────────────────────────────────────────────────────────────────────
+  # Serves the already-built HTML at http://localhost:8080.
+  # Run the `build` service first.
+  serve:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./_build/html:/usr/share/nginx/html:ro
+    ports:
+      - "8080:80"
+    restart: unless-stopped

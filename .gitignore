@@ -1,1 +1,8 @@
-workspace/
+# ── Book source folders (markdown + images stay local, not pushed to GitHub) ──
+elctricity-magnetism/
+Electricity-matter/
+Recollections-And-Reflections/
+
+# ── Jupyter Book build output and cache ───────────────────────────────────────
+_build/
+.jupyter_cache/
