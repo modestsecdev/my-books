@@ -1,30 +1,26 @@
 #!/usr/bin/env pwsh
-# ════════════════════════════════════════════════════════════════════════════════
-#  workspace/deploy.ps1 — Build and deploy Jupyter Book to GitHub Pages
+# ============================================================================
+#  workspace/deploy.ps1 - Build and deploy Jupyter Book to GitHub Pages
 #
-#  USAGE
-#    From the repository root:
-#      .\workspace\deploy.ps1
+#  USAGE (from the repository root):
+#    .\workspace\deploy.ps1              # build + deploy
+#    .\workspace\deploy.ps1 -SkipBuild  # skip Docker build, use existing _build/
+#    .\workspace\deploy.ps1 -DryRun     # build but do not push
 #
 #  WHAT IT DOES
-#    1. Runs `docker compose run --rm build` to build the book locally.
-#    2. If the build succeeds, pushes ONLY the built HTML (_build/html/)
-#       to the `gh-pages` branch on origin.
-#    3. GitHub Pages then serves from that branch.
+#    1. Runs "docker compose run --rm build" (unless -SkipBuild).
+#    2. Clones the gh-pages branch into a temp directory (or inits fresh if the
+#       branch does not exist yet).
+#    3. Replaces its content with _build/html/ and adds .nojekyll.
+#    4. Commits and force-pushes to origin/gh-pages.
 #
-#  REQUIREMENTS
-#    - Docker Desktop running
-#    - git remote `origin` pointing to the GitHub repository
-#    - `git` available in PATH
-#
-#  NOTE
-#    The markdown source files are NEVER pushed to GitHub.
-#    Only the rendered HTML in _build/html/ is published.
-# ════════════════════════════════════════════════════════════════════════════════
+#  Only the rendered HTML (_build/html/) is ever pushed to GitHub.
+#  The markdown source stays local.
+# ============================================================================
 
 param(
-    [switch]$SkipBuild,        # Skip the Docker build step (use existing _build/)
-    [switch]$DryRun,           # Print what would happen without pushing
+    [switch]$SkipBuild,
+    [switch]$DryRun,
     [string]$Remote = "origin",
     [string]$Branch = "gh-pages"
 )
@@ -32,112 +28,94 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# ── helpers ──────────────────────────────────────────────────────────────────
-
 function Write-Step { param([string]$Msg) Write-Host "`n==> $Msg" -ForegroundColor Cyan }
 function Write-OK   { param([string]$Msg) Write-Host "    OK: $Msg" -ForegroundColor Green }
-function Write-Fail { param([string]$Msg) Write-Host "    FAIL: $Msg" -ForegroundColor Red }
+function Write-Fail { param([string]$Msg) Write-Host "    FAIL: $Msg" -ForegroundColor Red; exit 1 }
 
-# ── locate repo root (the directory containing this script's parent) ──────────
-
-$ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
-$RepoRoot   = Split-Path -Parent $ScriptDir
-$BuildDir   = Join-Path $RepoRoot "_build\html"
+# locate paths
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$RepoRoot  = Split-Path -Parent $ScriptDir
+$BuildDir  = Join-Path $RepoRoot "_build\html"
+$TempDir   = Join-Path $env:TEMP "jb-gh-pages-$(Get-Random)"
 
 Set-Location $RepoRoot
 Write-Step "Repository root: $RepoRoot"
 
-# ── step 1: build ─────────────────────────────────────────────────────────────
-
+# step 1: build
 if (-not $SkipBuild) {
     Write-Step "Building Jupyter Book via Docker..."
     docker compose run --rm build
-    if ($LASTEXITCODE -ne 0) {
-        Write-Fail "Docker build failed. Aborting deploy."
-        exit 1
-    }
+    if ($LASTEXITCODE -ne 0) { Write-Fail "Docker build failed. Aborting." }
     Write-OK "Book built successfully."
 } else {
-    Write-Host "    Skipping build (-SkipBuild was set)." -ForegroundColor Yellow
+    Write-Host "    Skipping build (-SkipBuild)." -ForegroundColor Yellow
 }
 
 if (-not (Test-Path $BuildDir)) {
-    Write-Fail "_build/html/ not found at: $BuildDir"
-    Write-Fail "Run without -SkipBuild, or check that the build completed."
-    exit 1
+    Write-Fail "_build/html/ not found. Run without -SkipBuild first."
 }
 
-# ── step 2: deploy to gh-pages using a git worktree ──────────────────────────
+# step 2: get the remote URL
+$RemoteUrl = (git remote get-url $Remote)
+if ($LASTEXITCODE -ne 0) { Write-Fail "Cannot get URL for remote '$Remote'." }
 
-Write-Step "Deploying _build/html/ to branch '$Branch' on '$Remote'..."
-
-$WorktreeDir = Join-Path $env:TEMP "jb-deploy-$(Get-Random)"
+# step 3: prepare temp deploy directory
+Write-Step "Preparing deploy directory..."
+New-Item -ItemType Directory -Path $TempDir | Out-Null
 
 try {
-    # Ensure the gh-pages branch exists on the remote (create orphan if needed)
-    $branchExists = git ls-remote --heads $Remote $Branch 2>&1
-    if (-not ($branchExists -match "refs/heads/$Branch")) {
-        Write-Host "    Creating orphan branch '$Branch' on $Remote..." -ForegroundColor Yellow
-        git checkout --orphan $Branch 2>&1 | Out-Null
-        git rm -rf . 2>&1 | Out-Null
-        "" | git commit --allow-empty-message -m "Initial gh-pages branch" --quiet
-        git push $Remote $Branch --quiet
-        git checkout - --quiet
+    Push-Location $TempDir
+
+    # Try to clone the existing gh-pages branch (preserves history)
+    git clone --branch $Branch --depth 1 $RemoteUrl . 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        # Branch does not exist yet - start a fresh orphan repo
+        Write-Host "    Branch '$Branch' not found. Initialising fresh." -ForegroundColor Yellow
+        git init --quiet
+        git remote add $Remote $RemoteUrl
+        git checkout --orphan $Branch 2>$null | Out-Null
     }
 
-    # Add a worktree pointing to the gh-pages branch in a temp directory
-    git worktree add $WorktreeDir $Branch --quiet
+    # Wipe everything except .git
+    Get-ChildItem -LiteralPath $TempDir -Force |
+        Where-Object { $_.Name -ne ".git" } |
+        Remove-Item -Recurse -Force
 
-    # Sync _build/html/ into the worktree
-    Write-Host "    Copying HTML to worktree..."
-    $robocopyArgs = @($BuildDir, $WorktreeDir, "/MIR", "/NFL", "/NDL", "/NJH", "/NJS")
-    robocopy @robocopyArgs | Out-Null
-    # robocopy exit codes 0-7 are success
-    if ($LASTEXITCODE -gt 7) {
-        Write-Fail "robocopy failed with exit code $LASTEXITCODE"
-        exit 1
-    }
+    # Copy the built HTML into the deploy dir
+    Write-Host "    Copying HTML..."
+    Copy-Item -Path "$BuildDir\*" -Destination $TempDir -Recurse -Force
 
-    # Add a .nojekyll file so GitHub Pages serves all files (including _static/)
-    "" | Set-Content (Join-Path $WorktreeDir ".nojekyll") -NoNewline
+    # Bypass Jekyll processing (needed for _static/ etc.)
+    Set-Content -Path (Join-Path $TempDir ".nojekyll") -Value "" -NoNewline
 
-    Push-Location $WorktreeDir
-    try {
-        git add -A
-        $statusOutput = git status --porcelain
-        if (-not $statusOutput) {
-            Write-Host "    Nothing changed — gh-pages branch is already up to date." -ForegroundColor Yellow
+    # commit
+    git add -A
+    $statusLines = git status --porcelain
+    if (-not $statusLines) {
+        Write-Host "    Nothing changed - gh-pages is already up to date." -ForegroundColor Yellow
+    } else {
+        $msg = "Deploy Jupyter Book $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+        git commit -m $msg --quiet
+        if ($DryRun) {
+            Write-Host "    [DRY RUN] Would push to $Remote/$Branch - skipping." -ForegroundColor Yellow
+            git log --oneline -1
         } else {
-            $commitMsg = "Deploy Jupyter Book $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
-            git commit -m $commitMsg --quiet
-
-            if ($DryRun) {
-                Write-Host "    [DRY RUN] Would push to $Remote/$Branch." -ForegroundColor Yellow
-                git log --oneline -1
-            } else {
-                git push $Remote $Branch --quiet
-                Write-OK "Pushed to $Remote/$Branch"
-            }
+            git push $Remote "HEAD:refs/heads/$Branch" --force --quiet
+            Write-OK "Pushed to $Remote/$Branch"
         }
-    } finally {
-        Pop-Location
     }
+
+    Pop-Location
 
 } finally {
-    # Always clean up the temporary worktree
-    if (Test-Path $WorktreeDir) {
-        git worktree remove $WorktreeDir --force 2>&1 | Out-Null
+    if (Test-Path $TempDir) {
+        Set-Location $RepoRoot
+        Remove-Item $TempDir -Recurse -Force
     }
 }
 
 Write-Step "Done!"
-Write-Host @"
-
-    GitHub Pages will serve the site from the '$Branch' branch.
-    Make sure GitHub Pages is configured:
-      Settings -> Pages -> Source -> Deploy from branch -> $Branch -> / (root)
-
-    Site URL (after GitHub enables Pages):
-      https://<org>.github.io/<repo>/
-
-"@ -ForegroundColor Green
+if (-not $DryRun) {
+    Write-Host "`n  Settings -> Pages -> Deploy from branch -> gh-pages -> / (root)" -ForegroundColor Green
+    Write-Host "  Site: https://modestsecdev.github.io/my-books/`n" -ForegroundColor Green
+}
