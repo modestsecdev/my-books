@@ -1,8 +1,7 @@
-# J.J. Thomson's Works
+# Welcome
 
-Welcome to the collected works of **Sir J.J. Thomson** (1856–1940), Nobel Laureate in Physics (1906) and discoverer of the electron.
+ 
 
-This site brings together three of his major works in a single, searchable, and navigable format.
 
 ---
 
@@ -19,7 +18,12 @@ Six lectures delivered at Yale University in 1903. Thomson outlines his views on
 ### [Recollections and Reflections](../Recollections-And-Reflections/ch1)
 
 Thomson's autobiography, written in his later years. A vivid account of Victorian-era science education, life at the Cavendish Laboratory in Cambridge, and the remarkable generation of physicists who shaped the modern world.
+### [elementary-treatise-electricity-Garnett](../elementary-treatise-electricity-Garnett)
 
----
 
-*All texts are in the public domain.*
+
+### [Suomi 1](../suomi1)
+
+
+
+
