@@ -1,12 +1,10 @@
-# J.J. Thomson's Works
+# Welcome
 
-Welcome to the collected works of **Sir J.J. Thomson** (1856–1940), Nobel Laureate in Physics (1906) and discoverer of the electron.
-
-This site brings together three of his major works in a single, searchable, and navigable format.
+A collection of classic scientific texts and language learning materials, rendered as a single searchable site.
 
 ---
 
-## Books
+## Physics — J.J. Thomson
 
 ### [Electricity and Magnetism](../elctricity-magnetism/ch1)
 
@@ -22,4 +20,18 @@ Thomson's autobiography, written in his later years. A vivid account of Victoria
 
 ---
 
-*All texts are in the public domain.*
+## Physics — James Clerk Maxwell
+
+### [An Elementary Treatise on Electricity](../elementary-treatise-electricity-Garnett/README)
+
+Maxwell's accessible introduction to electricity, edited by William Garnett and published posthumously in 1881. Covers electrostatics, electric currents, and the foundations of electromagnetic theory with characteristic clarity.
+
+---
+
+## Language Learning
+
+### [Suomi 1](../suomi1/ch01)
+
+A Finnish language course for beginners. Forty lessons covering everyday vocabulary, grammar, and situations — from basic introductions to travelling, shopping, and describing the world around you.
+
+
