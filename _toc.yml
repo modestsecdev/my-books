@@ -59,6 +59,38 @@ parts:
       - file: Recollections-And-Reflections/ch12
 
   # ────────────────────────────────────────────────────────────────────────────
+  - caption: "Suomi 1"
+    chapters:
+      - file: suomi1/ch01
+      - file: suomi1/ch03
+      - file: suomi1/ch06
+      - file: suomi1/ch08
+      - file: suomi1/ch10
+      - file: suomi1/ch13
+      - file: suomi1/ch15
+      - file: suomi1/ch18
+      - file: suomi1/ch21
+      - file: suomi1/ch22
+      - file: suomi1/ch25
+      - file: suomi1/ch27
+      - file: suomi1/ch28
+      - file: suomi1/ch30
+      - file: suomi1/ch32
+      - file: suomi1/ch34
+      - file: suomi1/ch36
+      - file: suomi1/ch37
+      - file: suomi1/ch38
+      - file: suomi1/ch39
+      - file: suomi1/ch40
+      - file: suomi1/ch-app
+      - file: suomi1/ch-app2
+
+  # ────────────────────────────────────────────────────────────────────────────
+  - caption: "An Elementary Treatise on Electricity"
+    chapters:
+      - file: elementary-treatise-electricity-Garnett/README
+
+  # ────────────────────────────────────────────────────────────────────────────
   # To add a new book in the future, append a new part block here, e.g.:
   #
   # - caption: "My New Book Title"
