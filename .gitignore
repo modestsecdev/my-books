@@ -2,6 +2,12 @@
 elctricity-magnetism/
 Electricity-matter/
 Recollections-And-Reflections/
+suomi1/
+elementary-treatise-electricity-Garnett/
+maxwell-papers/
+
+# ── Local documentation (not committed to GitHub) ─────────────────────────────
+docs/
 
 # ── Jupyter Book build output and cache ───────────────────────────────────────
 _build/
